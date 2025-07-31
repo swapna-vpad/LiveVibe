@@ -10,10 +10,9 @@ import { enhancedSupabase } from '@/lib/supabase'
 
 interface SignInFormProps {
   onToggleMode: () => void
-  
 }
 
-export function SignInForm({ onToggleMode,  }: SignInFormProps) {
+export function SignInForm({ onToggleMode }: SignInFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -65,7 +64,7 @@ const onClose = () => {
     e.preventDefault()
     setLoading(true)
     
-    console.log('Attempting to sign in with:', { email, password })
+    console.log('Attempting to sign in with auth_table:', { email, password })
     
     try {
     const { error } = await signIn(email, password)
@@ -76,7 +75,7 @@ const onClose = () => {
         console.error('Sign in error details:', error)
       toast({
         title: "Error",
-          description: error.message || "Failed to sign in. Please check your credentials and try again.",
+          description: error.message || "Invalid email/username or password. Please check your credentials and try again.",
         variant: "destructive",
       })
     } else {
@@ -118,13 +117,13 @@ const onClose = () => {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email or Username</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="email"
-                type="email"
-                placeholder="Enter your email"
+                type="text"
+                placeholder="Enter your email or username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { enhancedSupabase } from '@/lib/supabase'
+import { AuthTableService, AuthTableUser } from '@/lib/auth-table'
 
 interface AuthContextType {
   user: User | null
+  authTableUser: AuthTableUser | null
   session: Session | null
   loading: boolean
   signUp: (email: string, password: string) => Promise<{ error: any }>
@@ -15,6 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [authTableUser, setAuthTableUser] = useState<AuthTableUser | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -63,12 +66,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string) => {
     console.log('AuthContext: Attempting sign up for:', email)
     try {
-      console.log('AuthContext: Making request to Supabase...')
-      const response = await enhancedSupabase.auth.signUp({
+      console.log('AuthContext: Using auth_table for signup...')
+      
+      // Extract username from email (before @)
+      const username = email.split('@')[0]
+      
+      const response = await AuthTableService.signUp({
+        user_name: username,
         email,
         password,
+        module: 'artist'
       })
-      console.log('AuthContext: Sign up response:', response)
+      
+      if (response.error) {
+        console.error('AuthContext: Auth table signup failed:', response.error)
+        return { error: response.error }
+      }
+      
+      if (response.user) {
+        console.log('AuthContext: Auth table user created:', response.user)
+        setAuthTableUser(response.user)
+        
+        // Create a mock Supabase user for compatibility
+        const mockUser = {
+          id: response.user.id.toString(),
+          email: response.user.email,
+          user_metadata: {
+            user_name: response.user.user_name,
+            module: response.user.module
+          }
+        } as User
+        
+        setUser(mockUser)
+        
+        // Trigger profile setup
+        setTimeout(() => {
+          const profileSetupEvent = new CustomEvent('startProfileSetup')
+          window.dispatchEvent(profileSetupEvent)
+        }, 500)
+      }
+      
+      console.log('AuthContext: Auth table signup response:', response)
       return { error: response.error }
     } catch (error: any) {
       console.error('AuthContext: Sign up failed with error:', error)
@@ -91,12 +129,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     console.log('AuthContext: Attempting sign in for:', email)
     try {
-      console.log('AuthContext: Making sign in request to Supabase...')
-      const response = await enhancedSupabase.auth.signInWithPassword({
-        email,
-        password,
+      console.log('AuthContext: Using auth_table for signin...')
+      
+      const response = await AuthTableService.signIn({
+        email_or_username: email,
+        password
       })
-      console.log('AuthContext: Sign in response:', response)
+      
+      if (response.error) {
+        console.error('AuthContext: Auth table signin failed:', response.error)
+        return { error: response.error }
+      }
+      
+      if (response.user) {
+        console.log('AuthContext: Auth table user authenticated:', response.user)
+        setAuthTableUser(response.user)
+        
+        // Create a mock Supabase user for compatibility
+        const mockUser = {
+          id: response.user.id.toString(),
+          email: response.user.email,
+          user_metadata: {
+            user_name: response.user.user_name,
+            module: response.user.module
+          }
+        } as User
+        
+        setUser(mockUser)
+        
+        // Check for existing profile
+        checkUserProfile(response.user.id.toString())
+      }
+      
+      console.log('AuthContext: Auth table signin response:', response)
       return { error: response.error }
     } catch (error: any) {
       console.error('AuthContext: Sign in failed with error:', error)
@@ -117,6 +182,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    // Clear auth table user
+    setAuthTableUser(null)
+    setUser(null)
+    setSession(null)
+    
+    // Also sign out from Supabase auth if there's a session
     await enhancedSupabase.auth.signOut()
   }
 
@@ -155,6 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user,
+    authTableUser,
     session,
     loading,
     signUp,

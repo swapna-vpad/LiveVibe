@@ -10,18 +10,31 @@ import { enhancedSupabase } from '@/lib/supabase'
 
 interface SignUpFormProps {
   onToggleMode: () => void
-  onClose: () => void
 }
 
-export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
+export function SignUpForm({ onToggleMode }: SignUpFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
   const { toast } = useToast()
 
+// Get onClose function from parent component
+const onClose = () => {
+  // This will be passed from the parent AuthModal
+  const event = new CustomEvent('closeAuthModal')
+  window.dispatchEvent(event)
+}
 
+  // Auto-generate username from email
+  useEffect(() => {
+    if (email && email.includes('@')) {
+      const generatedUsername = email.split('@')[0]
+      setUsername(generatedUsername)
+    }
+  }, [email])
 
   const handleSocialSignUp = async (provider: 'spotify') => {
     try {
@@ -78,9 +91,17 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
       return
     }
 
+    if (!username.trim()) {
+      toast({
+        title: "Error",
+        description: "Username is required",
+        variant: "destructive",
+      })
+      return
+    }
     setLoading(true)
     
-    console.log('Attempting to sign up with:', { email, password })
+    console.log('Attempting to sign up with:', { email, username, password })
     
     const { error } = await signUp(email, password)
     
@@ -145,6 +166,21 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="username"
+                type="text"
+                placeholder="Choose a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
+              />
+            </div>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
