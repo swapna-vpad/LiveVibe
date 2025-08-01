@@ -100,6 +100,11 @@ function AppContent() {
       setProfileSetupOpen(true);
     };
     
+    const handleStartPromoterProfileSetup = () => {
+      console.log('App: Starting promoter profile setup')
+      setPromoterSetupOpen(true);
+    };
+    
     const handleShowPricingAfterSignup = () => {
       console.log('App: Showing pricing after signup')
       setShowPricing(true);
@@ -114,6 +119,7 @@ function AppContent() {
     window.addEventListener('closeAuthModal', handleCloseAuthModal);
     window.addEventListener('showProfile', handleShowProfile);
     window.addEventListener('startProfileSetup', handleStartProfileSetup);
+    window.addEventListener('startPromoterProfileSetup', handleStartPromoterProfileSetup);
     window.addEventListener('showPricingAfterSignup', handleShowPricingAfterSignup);
     window.addEventListener('openSignupModal', handleOpenSignupModal);
     
@@ -121,6 +127,7 @@ function AppContent() {
       window.removeEventListener('closeAuthModal', handleCloseAuthModal);
       window.removeEventListener('showProfile', handleShowProfile);
       window.removeEventListener('startProfileSetup', handleStartProfileSetup);
+      window.removeEventListener('startPromoterProfileSetup', handleStartPromoterProfileSetup);
       window.removeEventListener('showPricingAfterSignup', handleShowPricingAfterSignup);
       window.removeEventListener('openSignupModal', handleOpenSignupModal);
     };

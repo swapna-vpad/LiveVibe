@@ -4,11 +4,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { enhancedSupabase } from '@/lib/supabase'
-import { Loader2, Mail, Lock, User, MapPin, Music, Smartphone } from 'lucide-react'
+import { Loader2, Mail, Lock, User, MapPin, Music, Users } from 'lucide-react'
 
 interface PromoterSignUpFormProps {
   onBack: () => void
@@ -48,9 +47,6 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
   const [loading, setLoading] = useState(false)
   const [showCreatorTypeDropdown, setShowCreatorTypeDropdown] = useState(false)
   const [showPlatformDropdown, setShowPlatformDropdown] = useState(false)
-  const [uploadingPhoto, setUploadingPhoto] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [formRefs, setFormRefs] = useState<{ [key: string]: HTMLDivElement | null }>({})
   
   const { signUp } = useAuth()
   const { toast } = useToast()
@@ -67,45 +63,6 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
   const handlePlatformSelect = (platform: string) => {
     handleInputChange('platform', platform)
     setShowPlatformDropdown(false)
-  }
-
-  // Scrollspy functionality
-  const updateCurrentStep = () => {
-    const formSections = [
-      'personal-info',
-      'contact-info', 
-      'preferences',
-      'security'
-    ]
-    
-    for (let i = formSections.length - 1; i >= 0; i--) {
-      const section = formSections[i]
-      const element = formRefs[section]
-      if (element) {
-        const rect = element.getBoundingClientRect()
-        if (rect.top <= 100) {
-          setCurrentStep(i + 1)
-          break
-        }
-      }
-    }
-  }
-
-  // Add scroll event listener
-  React.useEffect(() => {
-    const handleScroll = () => {
-      updateCurrentStep()
-    }
-    
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [formRefs])
-
-  const scrollToSection = (sectionId: string) => {
-    const element = formRefs[sectionId]
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -167,7 +124,7 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
           })
         }
       } else {
-        // Save promoter data to database
+        // Save user data to appropriate tables
         try {
           const { data: { user } } = await enhancedSupabase.auth.getUser()
           
@@ -185,18 +142,13 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
               console.error('Error saving to auth_table:', authError)
             }
             
-            // Save to promoter_profiles with the new fields
+            // Save to promoter_profiles
             const { error: promoterError } = await enhancedSupabase
               .from('promoter_profiles')
               .insert({
                 user_id: user.id,
-                first_name: formData.firstName,
-                last_name: formData.lastName,
-                stage_name: formData.stageName,
-                city: formData.cityLocation,
-                creator_type: formData.creatorType,
-                platform: formData.platform,
-                promoter_type: 'promoter',
+                name: `${formData.firstName} ${formData.lastName}`,
+                promoter_type: formData.creatorType,
                 subscription_plan: 'freemium'
               })
             
@@ -213,15 +165,14 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
           description: "🎉 Welcome to Live Vibe! Your promoter account has been created successfully.",
         })
         
-        onClose()
-        
-        // Trigger profile setup after successful signup
+        // Trigger promoter profile setup after successful signup
         setTimeout(() => {
-          const profileSetupEvent = new CustomEvent('startProfileSetup', {
+          const profileSetupEvent = new CustomEvent('startPromoterProfileSetup', {
             detail: { userType: 'promoter' }
           })
           window.dispatchEvent(profileSetupEvent)
-        }, 500)
+          onClose()
+        }, 1000)
       }
     } catch (error: any) {
       toast({
@@ -238,134 +189,97 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
   const selectedPlatform = PLATFORMS.find(platform => platform.value === formData.platform)
 
   return (
-    <Card className="w-full max-w-sm sm:max-w-md mx-auto shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
-      <CardHeader className="space-y-1 text-center p-4 sm:p-6">
-        <div className="flex items-center justify-center mb-3 sm:mb-4">
-          <div className="bg-gradient-to-r from-teal-600 to-blue-500 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center">
-            <User className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+    <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+      <CardHeader className="space-y-1 text-center">
+        <div className="flex items-center justify-center mb-4">
+          <div className="bg-gradient-to-r from-teal-600 to-blue-500 w-12 h-12 rounded-full flex items-center justify-center">
+            <Users className="h-6 w-6 text-white" />
           </div>
         </div>
-        <CardTitle className="text-xl sm:text-2xl font-bold">Promoter Sign Up</CardTitle>
-        <CardDescription className="text-sm sm:text-base">
+        <CardTitle className="text-2xl font-bold">Promoter Sign Up</CardTitle>
+        <CardDescription>
           Create your promoter account and start organizing amazing events
         </CardDescription>
       </CardHeader>
       
-      {/* Scrollspy Navigation */}
-      <div className="px-4 sm:px-6 pb-4">
+      <CardContent className="space-y-4">
+        {/* Back Button */}
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={onBack}
-            className="text-xs sm:text-sm text-gray-600 hover:text-gray-800 flex items-center justify-center sm:justify-start"
+            className="text-sm text-gray-600 hover:text-gray-800 flex items-center"
           >
             ← Back to role selection
           </button>
-          <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-right">
+          <div className="text-sm text-gray-500">
             Selected: <span className="font-medium">Promoter</span>
           </div>
         </div>
         
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-6">
-          {[
-            { id: 1, label: 'Personal', section: 'personal-info' },
-            { id: 2, label: 'Contact', section: 'contact-info' },
-            { id: 3, label: 'Preferences', section: 'preferences' },
-            { id: 4, label: 'Security', section: 'security' }
-          ].map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              <button
-                onClick={() => scrollToSection(step.section)}
-                className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
-                  currentStep >= step.id
-                    ? 'bg-teal-600 text-white shadow-lg'
-                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                }`}
-              >
-                {step.id}
-              </button>
-              {index < 3 && (
-                <div className={`w-8 sm:w-12 h-0.5 mx-2 ${
-                  currentStep > step.id ? 'bg-teal-600' : 'bg-gray-200'
-                }`} />
-              )}
-            </div>
-          ))}
-        </div>
-        
-        {/* Step Labels */}
-        <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-4">
-          <span className={currentStep >= 1 ? 'text-teal-600 font-medium' : ''}>Personal Info</span>
-          <span className={currentStep >= 2 ? 'text-teal-600 font-medium' : ''}>Contact</span>
-          <span className={currentStep >= 3 ? 'text-teal-600 font-medium' : ''}>Preferences</span>
-          <span className={currentStep >= 4 ? 'text-teal-600 font-medium' : ''}>Security</span>
-        </div>
-      </div>
-      
-      <CardContent className="p-4 sm:p-6">
-        <div className="space-y-6">
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Personal Information Section */}
-            <div 
-              ref={(el) => setFormRefs(prev => ({ ...prev, 'personal-info': el }))}
-              className="space-y-4"
-            >
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 border-b border-gray-200 pb-2">
-                Personal Information
-              </h3>
-              
-              {/* Name Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-sm sm:text-base">First Name *</Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    placeholder="Enter first name"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    required
-                    className="h-10 sm:h-12 rounded-xl border-2 focus:border-teal-400 text-sm sm:text-base"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-sm sm:text-base">Last Name *</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Enter last name"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    required
-                    className="h-10 sm:h-12 rounded-xl border-2 focus:border-teal-400 text-sm sm:text-base"
-                  />
-                </div>
-              </div>
-
-              {/* Stage Name */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Personal Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+              Personal Information
+            </h3>
+            
+            {/* Name Fields */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="stageName" className="text-sm sm:text-base">Stage Name</Label>
-                <div className="relative">
-                  <Music className="absolute left-3 top-2.5 sm:top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="stageName"
-                    type="text"
-                    placeholder="Enter your stage name"
-                    value={formData.stageName}
-                    onChange={(e) => handleInputChange('stageName', e.target.value)}
-                    className="pl-10 h-10 sm:h-12 rounded-xl border-2 focus:border-teal-400 text-sm sm:text-base"
-                  />
-                </div>
+                <Label htmlFor="firstName">First Name *</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  placeholder="Enter first name"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  required
+                  className="h-12 rounded-xl border-2 focus:border-teal-400"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name *</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="Enter last name"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  required
+                  className="h-12 rounded-xl border-2 focus:border-teal-400"
+                />
               </div>
             </div>
 
+            {/* Stage Name */}
+            <div className="space-y-2">
+              <Label htmlFor="stageName">Stage Name</Label>
+              <div className="relative">
+                <Music className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="stageName"
+                  type="text"
+                  placeholder="Enter your stage name"
+                  value={formData.stageName}
+                  onChange={(e) => handleInputChange('stageName', e.target.value)}
+                  className="pl-10 h-12 rounded-xl border-2 focus:border-teal-400"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+              Contact Information
+            </h3>
+            
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm sm:text-base">Email Address *</Label>
+              <Label htmlFor="email">Email Address *</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 sm:top-3 h-4 w-4 text-gray-400" />
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
@@ -373,16 +287,16 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   required
-                  className="pl-10 h-10 sm:h-12 rounded-xl border-2 focus:border-teal-400 text-sm sm:text-base"
+                  className="pl-10 h-12 rounded-xl border-2 focus:border-teal-400"
                 />
               </div>
             </div>
 
             {/* City Location */}
             <div className="space-y-2">
-              <Label htmlFor="cityLocation" className="text-sm sm:text-base">City Location *</Label>
+              <Label htmlFor="cityLocation">City Location *</Label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-2.5 sm:top-3 h-4 w-4 text-gray-400" />
+                <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   id="cityLocation"
                   type="text"
@@ -390,23 +304,30 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
                   value={formData.cityLocation}
                   onChange={(e) => handleInputChange('cityLocation', e.target.value)}
                   required
-                  className="pl-10 h-10 sm:h-12 rounded-xl border-2 focus:border-teal-400 text-sm sm:text-base"
+                  className="pl-10 h-12 rounded-xl border-2 focus:border-teal-400"
                 />
               </div>
             </div>
+          </div>
 
+          {/* Preferences */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+              Preferences
+            </h3>
+            
             {/* Creator Type Selection */}
             <div className="space-y-2">
-              <Label className="text-sm sm:text-base">Select Creator Type: *</Label>
+              <Label>Select Creator Type: *</Label>
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setShowCreatorTypeDropdown(!showCreatorTypeDropdown)}
-                  className="w-full h-10 sm:h-12 px-3 text-left border-2 border-gray-200 rounded-xl focus:border-teal-400 focus:outline-none bg-white text-sm sm:text-base"
+                  className="w-full h-12 px-3 text-left border-2 border-gray-200 rounded-xl focus:border-teal-400 focus:outline-none bg-white"
                 >
                   {selectedCreatorType ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-base sm:text-lg">{selectedCreatorType.icon}</span>
+                      <span className="text-lg">{selectedCreatorType.icon}</span>
                       <span>{selectedCreatorType.label}</span>
                     </div>
                   ) : (
@@ -415,9 +336,9 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
                 </button>
                 
                 {showCreatorTypeDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-48 sm:max-h-60 overflow-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto">
                     <Command>
-                      <CommandInput placeholder="Search creator types..." className="text-sm sm:text-base" />
+                      <CommandInput placeholder="Search creator types..." />
                       <CommandList>
                         <CommandEmpty>No creator type found.</CommandEmpty>
                         <CommandGroup>
@@ -425,9 +346,9 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
                             <CommandItem
                               key={type.value}
                               onSelect={() => handleCreatorTypeSelect(type.value)}
-                              className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 cursor-pointer hover:bg-gray-50 text-sm sm:text-base"
+                              className="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50"
                             >
-                              <span className="text-base sm:text-lg">{type.icon}</span>
+                              <span className="text-lg">{type.icon}</span>
                               <span>{type.label}</span>
                             </CommandItem>
                           ))}
@@ -482,7 +403,14 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
                 )}
               </div>
             </div>
+          </div>
 
+          {/* Security */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
+              Security
+            </h3>
+            
             {/* Password Fields */}
             <div className="space-y-2">
               <Label htmlFor="password">Password *</Label>
@@ -515,23 +443,23 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
                 />
               </div>
             </div>
+          </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-teal-600 to-blue-500 hover:from-teal-700 hover:to-blue-600 h-12 rounded-xl text-lg font-medium"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Account...
-                </>
-              ) : (
-                'Create Promoter Account'
-              )}
-            </Button>
-          </form>
-        </div>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-teal-600 to-blue-500 hover:from-teal-700 hover:to-blue-600 h-12 rounded-xl text-lg font-medium"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating Account...
+              </>
+            ) : (
+              'Create Promoter Account'
+            )}
+          </Button>
+        </form>
       </CardContent>
     </Card>
   )
