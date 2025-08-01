@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Mail, Lock, User, Github, Music } from 'lucide-react'
+import { Loader2, Mail, Lock, User, Github, Music, Mic, Users } from 'lucide-react'
 import { enhancedSupabase } from '@/lib/supabase'
+import { PromoterSignUpForm } from './PromoterSignUpForm'
 
 interface SignUpFormProps {
   onToggleMode: () => void
@@ -18,14 +20,43 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [userType, setUserType] = useState<'artist' | 'promoter' | null>(null)
+  const [showUserTypeSelection, setShowUserTypeSelection] = useState(true)
+  const [showPromoterSignUp, setShowPromoterSignUp] = useState(false)
   const { signUp } = useAuth()
   const { toast } = useToast()
 
+  const handleUserTypeSelect = (type: 'artist' | 'promoter') => {
+    setUserType(type)
+    if (type === 'promoter') {
+      setShowPromoterSignUp(true)
+    } else {
+      setShowUserTypeSelection(false)
+    }
+  }
 
+  const handleBackToUserTypeSelection = () => {
+    setShowPromoterSignUp(false)
+    setShowUserTypeSelection(true)
+    setUserType(null)
+  }
 
   const handleSocialSignUp = async (provider: 'spotify') => {
+    if (!userType) {
+      toast({
+        title: "Please Select Role",
+        description: "Please select whether you're an artist or promoter first",
+        variant: "destructive",
+      })
+      return
+    }
+    
     try {
-      console.log('Attempting Spotify OAuth sign up...')
+      console.log('Attempting Spotify OAuth sign up with user type:', userType)
+      
+      // Store user type in localStorage for OAuth callback
+      localStorage.setItem('pendingUserType', userType)
+      
       const { error } = await enhancedSupabase.auth.signInWithOAuth({
         provider: 'spotify',
         options: {
@@ -60,6 +91,15 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (!userType) {
+      toast({
+        title: "Error",
+        description: "Please select whether you're an artist or promoter",
+        variant: "destructive",
+      })
+      return
+    }
+    
     if (password !== confirmPassword) {
       toast({
         title: "Error",
@@ -80,9 +120,9 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
 
     setLoading(true)
     
-    console.log('Attempting to sign up with:', { email, password })
+    console.log('Attempting to sign up with:', { email, password, userType })
     
-    const { error } = await signUp(email, password)
+    const { error } = await signUp(email, password, userType)
     
     console.log('Sign up result:', { error })
     
@@ -102,9 +142,63 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
         })
       }
     } else {
+      // Save user data to appropriate tables
+      try {
+        const { data: { user } } = await enhancedSupabase.auth.getUser()
+        
+        if (user) {
+          // Save to auth_table
+          const { error: authError } = await enhancedSupabase
+            .from('auth_table')
+            .insert({
+              user_id: user.id,
+              user_type: userType,
+              email: email
+            })
+          
+          if (authError) {
+            console.error('Error saving to auth_table:', authError)
+          }
+          
+          // Save to appropriate profile table
+          if (userType === 'artist') {
+            const { error: artistError } = await enhancedSupabase
+              .from('artist_profiles')
+              .insert({
+                user_id: user.id,
+                name: '', // Will be filled during profile setup
+                artist_type: 'performing', // Default value
+                performing_artist_type: 'singer', // Default value
+                music_genres: [],
+                instruments: []
+              })
+            
+            if (artistError) {
+              console.error('Error saving to artist_profiles:', artistError)
+            }
+          } else if (userType === 'promoter') {
+            const { error: promoterError } = await enhancedSupabase
+              .from('promoter_profiles')
+              .insert({
+                user_id: user.id,
+                name: '', // Will be filled during profile setup
+                promoter_type: 'promoter', // Default value
+                subscription_plan: 'freemium' // Default value
+              })
+            
+            if (promoterError) {
+              console.error('Error saving to promoter_profiles:', promoterError)
+            }
+          }
+        }
+      } catch (profileError) {
+        console.error('Error creating profile:', profileError)
+      }
+      
+      const userTypeText = userType === 'artist' ? 'artist profile' : 'promoter profile'
       toast({
         title: "Success!",
-        description: "🎉 Welcome to Live Vibe! Let's set up your artist profile.",
+        description: `🎉 Welcome to Live Vibe! Let's set up your ${userTypeText}.`,
       })
       
       // Check if user came from pricing page
@@ -122,12 +216,24 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
       onClose()
       // Trigger profile setup after successful signup
       setTimeout(() => {
-        const profileSetupEvent = new CustomEvent('startProfileSetup')
+        const profileSetupEvent = new CustomEvent('startProfileSetup', {
+          detail: { userType }
+        })
         window.dispatchEvent(profileSetupEvent)
       }, 500)
     }
     
     setLoading(false)
+  }
+
+  // Show promoter signup form if selected
+  if (showPromoterSignUp) {
+    return (
+      <PromoterSignUpForm 
+        onBack={handleBackToUserTypeSelection}
+        onClose={onClose}
+      />
+    )
   }
 
   return (
@@ -144,100 +250,164 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
-              />
+        {showUserTypeSelection ? (
+          <div className="space-y-4">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Choose Your Role</h3>
+              <p className="text-sm text-gray-600">Select how you'll be using Live Vibe</p>
             </div>
+            <Command className="rounded-lg border shadow-sm">
+              <CommandInput placeholder="Search user types..." />
+              <CommandList>
+                <CommandEmpty>No user type found.</CommandEmpty>
+                <CommandGroup>
+                  <CommandItem 
+                    onSelect={() => handleUserTypeSelect('artist')}
+                    className="flex items-center space-x-2 p-4 cursor-pointer hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-3 w-full">
+                      <div className="bg-purple-100 p-2 rounded-lg">
+                        <Mic className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">Artist</div>
+                        <div className="text-sm text-gray-500">Perform and showcase your music</div>
+                      </div>
+                    </div>
+                  </CommandItem>
+                  <CommandItem 
+                    onSelect={() => handleUserTypeSelect('promoter')}
+                    className="flex items-center space-x-2 p-4 cursor-pointer hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-3 w-full">
+                      <div className="bg-teal-100 p-2 rounded-lg">
+                        <Users className="h-5 w-5 text-teal-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">Promoter</div>
+                        <div className="text-sm text-gray-500">Organize events and book artists</div>
+                      </div>
+                    </div>
+                  </CommandItem>
+                </CommandGroup>
+              </CommandList>
+            </Command>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="password"
-                type="password"
-                placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
-              />
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <button
+                type="button"
+                onClick={() => setShowUserTypeSelection(true)}
+                className="text-sm text-gray-600 hover:text-gray-800 flex items-center"
+              >
+                ← Back to role selection
+              </button>
+              <div className="text-sm text-gray-500">
+                Selected: <span className="font-medium capitalize">{userType}</span>
+              </div>
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
-              />
+            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
+                />
+              </div>
             </div>
-          </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 to-teal-500 hover:from-purple-700 hover:to-teal-600 h-12 rounded-xl text-lg font-medium"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Account...
-              </>
-            ) : (
-              'Create Account'
-            )}
-          </Button>
-        </form>
-        
-        {/* Divider */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-2 text-gray-500">Or continue with</span>
-          </div>
-        </div>
-        
-        {/* Spotify Login Button */}
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => handleSocialSignUp('spotify')}
-          className="w-full h-12 rounded-xl border-2 border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600 transition-colors"
-        >
-          <Music className="mr-2 h-5 w-5" />
-          Continue with Spotify
-        </Button>
-        
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <button
-              onClick={onToggleMode}
-              className="text-purple-600 hover:text-purple-700 font-medium"
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
+                />
+              </div>
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-purple-600 to-teal-500 hover:from-purple-700 hover:to-teal-600 h-12 rounded-xl text-lg font-medium"
             >
-              Sign in
-            </button>
-          </p>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Account...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </Button>
+          </form>
+          
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            </div>
+          </div>
+          
+          {/* Spotify Login Button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleSocialSignUp('spotify')}
+            disabled={!userType}
+            className={`w-full h-12 rounded-xl border-2 transition-colors ${
+              userType 
+                ? 'border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600' 
+                : 'border-gray-300 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            <Music className="mr-2 h-5 w-5" />
+            Continue with Spotify
+          </Button>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <button
+                onClick={onToggleMode}
+                className="text-purple-600 hover:text-purple-700 font-medium"
+              >
+                Sign in
+              </button>
+            </p>
+          </div>
         </div>
+        )}
       </CardContent>
     </Card>
   )
