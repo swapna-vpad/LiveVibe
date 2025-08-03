@@ -189,7 +189,7 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
   const selectedPlatform = PLATFORMS.find(platform => platform.value === formData.platform)
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+    <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-white/95 backdrop-blur-sm max-h-[85vh] overflow-y-auto">
       <CardHeader className="space-y-1 text-center">
         <div className="flex items-center justify-center mb-4">
           <div className="bg-gradient-to-r from-teal-600 to-blue-500 w-12 h-12 rounded-full flex items-center justify-center">
@@ -202,7 +202,7 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 px-6 pb-6">
         {/* Back Button */}
         <div className="flex items-center justify-between mb-4">
           <button
@@ -217,9 +217,9 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
           </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Information */}
-          <div className="space-y-4">
+          <div className="space-y-4 border-b border-gray-100 pb-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
               Personal Information
             </h3>
@@ -270,7 +270,7 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
           </div>
 
           {/* Contact Information */}
-          <div className="space-y-4">
+          <div className="space-y-4 border-b border-gray-100 pb-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
               Contact Information
             </h3>
@@ -311,7 +311,7 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
           </div>
 
           {/* Preferences */}
-          <div className="space-y-4">
+          <div className="space-y-4 border-b border-gray-100 pb-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
               Preferences
             </h3>
@@ -336,7 +336,7 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
                 </button>
                 
                 {showCreatorTypeDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto">
+                  <div className="absolute z-20 w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                     <Command>
                       <CommandInput placeholder="Search creator types..." />
                       <CommandList>
@@ -380,7 +380,7 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
                 </button>
                 
                 {showPlatformDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg">
+                  <div className="absolute z-20 w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
                     <Command>
                       <CommandInput placeholder="Search platforms..." />
                       <CommandList>
@@ -406,7 +406,7 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
           </div>
 
           {/* Security */}
-          <div className="space-y-4">
+          <div className="space-y-4 pb-2">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
               Security
             </h3>
@@ -445,11 +445,12 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
             </div>
           </div>
 
-          <Button
+          <div className="pt-4 border-t border-gray-100">
+            <Button
             type="submit"
             disabled={loading}
             className="w-full bg-gradient-to-r from-teal-600 to-blue-500 hover:from-teal-700 hover:to-blue-600 h-12 rounded-xl text-lg font-medium"
-          >
+            >
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -458,7 +459,8 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
             ) : (
               'Create Promoter Account'
             )}
-          </Button>
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>
