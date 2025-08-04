@@ -12,19 +12,20 @@ import { PromoterSignUpForm } from './PromoterSignUpForm'
 
 interface SignUpFormProps {
   onToggleMode: () => void
-  onClose: () => void
 }
 
-export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
+export function SignUpForm({ onToggleMode }: SignUpFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
   const [userType, setUserType] = useState<'artist' | 'promoter' | null>(null)
   const [showUserTypeSelection, setShowUserTypeSelection] = useState(true)
   const [showPromoterSignUp, setShowPromoterSignUp] = useState(false)
   const { signUp } = useAuth()
   const { toast } = useToast()
+
 
   const handleUserTypeSelect = (type: 'artist' | 'promoter') => {
     setUserType(type)
@@ -40,6 +41,22 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
     setShowUserTypeSelection(true)
     setUserType(null)
   }
+
+// Get onClose function from parent component
+const onClose = () => {
+  // This will be passed from the parent AuthModal
+  const event = new CustomEvent('closeAuthModal')
+  window.dispatchEvent(event)
+}
+
+  // Auto-generate username from email
+  useEffect(() => {
+    if (email && email.includes('@')) {
+      const generatedUsername = email.split('@')[0]
+      setUsername(generatedUsername)
+    }
+  }, [email])
+
 
   const handleSocialSignUp = async (provider: 'spotify') => {
     if (!userType) {
@@ -118,10 +135,18 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
       return
     }
 
+    if (!username.trim()) {
+      toast({
+        title: "Error",
+        description: "Username is required",
+        variant: "destructive",
+      })
+      return
+    }
     setLoading(true)
     
-    console.log('Attempting to sign up with:', { email, password, userType })
-    
+    console.log('Attempting to sign up with:', { email, username, password })
+
     const { error } = await signUp(email, password, userType)
     
     console.log('Sign up result:', { error })
@@ -250,11 +275,35 @@ export function SignUpForm({ onToggleMode, onClose }: SignUpFormProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {showUserTypeSelection ? (
-          <div className="space-y-4">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Choose Your Role</h3>
-              <p className="text-sm text-gray-600">Select how you'll be using Live Vibe</p>
+    <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="username">Username</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="username"
+                type="text"
+                placeholder="Choose a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
+              />
             </div>
             <Command className="rounded-lg border shadow-sm">
               <CommandInput placeholder="Search user types..." />
