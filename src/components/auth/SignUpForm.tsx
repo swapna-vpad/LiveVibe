@@ -276,21 +276,8 @@ const onClose = () => {
       </CardHeader>
       <CardContent>
     <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="username"
-                type="text"
-                placeholder="Choose a username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
-              />
-            </div>
-          </div>
+   
+          
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -341,7 +328,7 @@ const onClose = () => {
                 </CommandGroup>
               </CommandList>
             </Command>
-          </div>
+         
 
       
       
