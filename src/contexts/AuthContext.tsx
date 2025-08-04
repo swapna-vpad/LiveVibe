@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user)
         
         // Check for existing profile
-        checkUserProfile(data.user.id)
+        checkUserProfileAndRedirect(data.user.id)
       }
 
       return { error: null }
