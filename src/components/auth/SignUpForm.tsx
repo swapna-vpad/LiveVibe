@@ -349,9 +349,7 @@ const onClose = () => {
             <div className="flex items-center justify-between mb-4">
 
               
-              <div className="text-sm text-gray-500">
-                Selected: <span className="font-medium capitalize">{userType}</span>
-              </div>
+             
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
