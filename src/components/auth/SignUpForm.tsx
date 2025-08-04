@@ -417,47 +417,7 @@ const onClose = () => {
               )}
             </Button>
           </form>
-          
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">Or continue with</span>
-            </div>
-          </div>
-          
-          {/* Spotify Login Button */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => handleSocialSignUp('spotify')}
-            disabled={!userType}
-            className={`w-full h-12 rounded-xl border-2 transition-colors ${
-              userType 
-                ? 'border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600' 
-                : 'border-gray-300 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            <Music className="mr-2 h-5 w-5" />
-            Continue with Spotify
-          </Button>
-          
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <button
-                onClick={onToggleMode}
-                className="text-purple-600 hover:text-purple-700 font-medium"
-              >
-                Sign in
-              </button>
-            </p>
-          </div>
-        </div>
-        )
-    </form>
+             
       </CardContent>
     </Card>
   )
