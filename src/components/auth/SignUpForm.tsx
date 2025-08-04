@@ -342,8 +342,15 @@ const onClose = () => {
               </CommandList>
             </Command>
           </div>
+      ):(
       
-         
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <button
+                type="button"
+                onClick={() => setShowUserTypeSelection(true)}
+                className="text-sm text-gray-600 hover:text-gray-800 flex items-center"
+              >
                 ← Back to role selection
               </button>
               <div className="text-sm text-gray-500">
