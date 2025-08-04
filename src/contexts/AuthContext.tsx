@@ -8,7 +8,7 @@ interface AuthContextType {
   authTableUser: AuthTableUser | null
   session: Session | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, userType: 'artist' | 'promoter') => Promise<{ error: any }>
   signIn: (email: string, password: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
 }
@@ -47,24 +47,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // If user just signed in, check if they have a profile
       if (_event === 'SIGNED_IN' && session?.user) {
         console.log('AuthContext: User signed in, checking profile')
-        checkUserProfile(session.user.id)
+        checkUserProfileAndRedirect(session.user.id)
       }
       
-      // If user just signed up, trigger profile setup
-      if (_event === 'SIGNED_UP' && session?.user) {
-        console.log('AuthContext: User signed up, triggering profile setup')
-        setTimeout(() => {
-          const profileSetupEvent = new CustomEvent('startProfileSetup')
-          window.dispatchEvent(profileSetupEvent)
-        }, 500)
+      // If user signed in via OAuth, check if we need to create profile
+      if (_event === 'SIGNED_IN' && session?.user) {
+        console.log('AuthContext: User signed in via OAuth, checking if profile exists')
+        handleOAuthSignIn(session.user)
       }
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  const signUp = async (email: string, password: string) => {
-    console.log('AuthContext: Attempting sign up for:', email)
+  const signUp = async (email: string, password: string, userType: 'artist' | 'promoter') => {
+    console.log('AuthContext: Attempting sign up for:', email, 'with user type:', userType)
     try {
       console.log('AuthContext: Using auth_table for signup...')
       
@@ -77,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         module: 'artist'
       })
+
       
       if (response.error) {
         console.error('AuthContext: Auth table signup failed:', response.error)
@@ -107,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       console.log('AuthContext: Auth table signup response:', response)
+
       return { error: response.error }
     } catch (error: any) {
       console.error('AuthContext: Sign up failed with error:', error)
@@ -191,20 +190,88 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await enhancedSupabase.auth.signOut()
   }
 
-  const checkUserProfile = async (userId: string) => {
+
+  const handleOAuthSignIn = async (user: User) => {
     try {
-      const { data: profile, error } = await enhancedSupabase
+      // Check if user has auth_table entry
+      const { data: authData, error: authError } = await enhancedSupabase
+        .from('auth_table')
+        .select('user_type')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (authError || !authData) {
+        // No auth_table entry, this might be a new OAuth user
+        // Check if they have any profile
+        const { data: artistProfile } = await enhancedSupabase
+          .from('artist_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single()
+        
+        const { data: promoterProfile } = await enhancedSupabase
+          .from('promoter_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single()
+        
+        if (!artistProfile && !promoterProfile) {
+          // No profile exists, trigger profile setup
+          setTimeout(() => {
+            const profileSetupEvent = new CustomEvent('startProfileSetup')
+            window.dispatchEvent(profileSetupEvent)
+          }, 500)
+        } else {
+          // Profile exists, show profile
+          setTimeout(() => {
+            const showProfileEvent = new CustomEvent('showProfile')
+            window.dispatchEvent(showProfileEvent)
+          }, 500)
+        }
+      } else {
+        // User has auth_table entry, check if they have a profile
+        checkUserProfileAndRedirect(user.id)
+      }
+    } catch (error) {
+      console.error('Error handling OAuth sign in:', error)
+    }
+  }
+
+  const checkUserProfileAndRedirect = async (userId: string) => {
+    try {
+      // Get user type from auth_table
+      const { data: authData } = await enhancedSupabase
+        .from('auth_table')
+        .select('user_type')
+        .eq('user_id', userId)
+        .single()
+      
+      const userType = authData?.user_type
+      
+      // Check both profile tables
+      const { data: artistProfile } = await enhancedSupabase
         .from('artist_profiles')
         .select('id')
         .eq('user_id', userId)
         .single()
       
-      if (error || !profile) {
-        // No profile found, trigger profile setup
+      const { data: promoterProfile } = await enhancedSupabase
+        .from('promoter_profiles')
+        .select('id')
+        .eq('user_id', userId)
+        .single()
+      
+      if (!artistProfile && !promoterProfile) {
+        // No profile found, trigger appropriate profile setup based on user type
         console.log('AuthContext: No profile found, triggering profile setup')
         setTimeout(() => {
-          const profileSetupEvent = new CustomEvent('startProfileSetup')
-          window.dispatchEvent(profileSetupEvent)
+          if (userType === 'promoter') {
+            const profileSetupEvent = new CustomEvent('startPromoterProfileSetup')
+            window.dispatchEvent(profileSetupEvent)
+          } else {
+            const profileSetupEvent = new CustomEvent('startProfileSetup')
+            window.dispatchEvent(profileSetupEvent)
+          }
         }, 500)
       } else {
         // Profile exists, show profile
@@ -215,7 +282,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }, 500)
       }
     } catch (error) {
-      console.error('AuthContext: Error checking user profile:', error)
+      console.error('AuthContext: Error checking user profile and redirect:', error)
       // Fallback to showing profile
       setTimeout(() => {
         const showProfileEvent = new CustomEvent('showProfile')

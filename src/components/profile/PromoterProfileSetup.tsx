@@ -92,6 +92,7 @@ export function PromoterProfileSetup({ isOpen, onClose, existingProfile }: Promo
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
   
   // Form state
   const [formData, setFormData] = useState({

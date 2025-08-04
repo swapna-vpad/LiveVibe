@@ -100,6 +100,11 @@ function AppContent() {
       setProfileSetupOpen(true);
     };
     
+    const handleStartPromoterProfileSetup = () => {
+      console.log('App: Starting promoter profile setup')
+      setPromoterSetupOpen(true);
+    };
+    
     const handleShowPricingAfterSignup = () => {
       console.log('App: Showing pricing after signup')
       setShowPricing(true);
@@ -111,18 +116,28 @@ function AppContent() {
       setAuthModalOpen(true);
     };
     
+    const handleOpenSignInModal = () => {
+      console.log('App: Opening sign-in modal')
+      setAuthMode('signin');
+      setAuthModalOpen(true);
+    };
+    
     window.addEventListener('closeAuthModal', handleCloseAuthModal);
     window.addEventListener('showProfile', handleShowProfile);
     window.addEventListener('startProfileSetup', handleStartProfileSetup);
+    window.addEventListener('startPromoterProfileSetup', handleStartPromoterProfileSetup);
     window.addEventListener('showPricingAfterSignup', handleShowPricingAfterSignup);
     window.addEventListener('openSignupModal', handleOpenSignupModal);
+    window.addEventListener('openSignInModal', handleOpenSignInModal);
     
     return () => {
       window.removeEventListener('closeAuthModal', handleCloseAuthModal);
       window.removeEventListener('showProfile', handleShowProfile);
       window.removeEventListener('startProfileSetup', handleStartProfileSetup);
+      window.removeEventListener('startPromoterProfileSetup', handleStartPromoterProfileSetup);
       window.removeEventListener('showPricingAfterSignup', handleShowPricingAfterSignup);
       window.removeEventListener('openSignupModal', handleOpenSignupModal);
+      window.removeEventListener('openSignInModal', handleOpenSignInModal);
     };
   }, []);
 
@@ -305,35 +320,35 @@ function AppContent() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20 lg:py-32">
+      <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-12 sm:py-16 md:py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-6">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
+              <div className="space-y-4 sm:space-y-6">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                   Create Stunning 
                   <span className="text-blue-600"> AI Videos</span>
                   <br />
                   <span className="text-purple-600">Get Booked</span> for Events
                 </h1>
-                <p className="text-xl text-gray-600 leading-relaxed">
+                <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
                   Transform your music into professional videos with AI, then get discovered by event organizers worldwide. 
                   Create, showcase, and earn from your talent all in one platform.
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
                   onClick={handleStartArtistJourney}
                 >
-                  <Wand2 className="mr-2 h-5 w-5" />
+                  <Wand2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Create AI Videos Free
                 </Button>
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="px-8 py-4 text-lg border-2"
+                  className="px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg border-2"
                   onClick={() => {
                     if (user) {
                       setAiStudioOpen(true);
@@ -343,26 +358,26 @@ function AppContent() {
                     }
                   }}
                 >
-                  <Video className="mr-2 h-5 w-5" />
+                  <Video className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   See AI Studio
                 </Button>
               </div>
-              <div className="flex items-center gap-8 pt-4">
+              <div className="flex items-center justify-center lg:justify-start gap-4 sm:gap-6 lg:gap-8 pt-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">50K+</div>
-                  <div className="text-sm text-gray-600">AI Videos Created</div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">50K+</div>
+                  <div className="text-xs sm:text-sm text-gray-600">AI Videos Created</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">10K+</div>
-                  <div className="text-sm text-gray-600">Artists Earning</div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">10K+</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Artists Earning</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">2M+</div>
-                  <div className="text-sm text-gray-600">Video Views</div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">2M+</div>
+                  <div className="text-xs sm:text-sm text-gray-600">Video Views</div>
                 </div>
               </div>
             </div>
-            <div className="relative max-w-md mx-auto">
+            <div className="relative max-w-sm sm:max-w-md mx-auto order-first lg:order-last">
               <ArtistWheel />
             </div>
           </div>
@@ -370,16 +385,16 @@ function AppContent() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      <section id="features" className="py-12 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">AI-Powered Artist Platform</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <div className="text-center space-y-4 mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">AI-Powered Artist Platform</h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               Create stunning videos with AI, get discovered by organizers, and build your career
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {[
               { 
                 title: "AI Video Creation", 
@@ -401,12 +416,12 @@ function AppContent() {
               }
             ].map((feature, idx) => (
               <Card key={idx} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardContent className="p-8 text-center space-y-4">
-                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${feature.color} mb-4`}>
-                    <feature.icon className="h-8 w-8" />
+                <CardContent className="p-6 sm:p-8 text-center space-y-4">
+                  <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full ${feature.color} mb-4`}>
+                    <feature.icon className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900">{feature.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">{feature.title}</h3>
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -415,23 +430,23 @@ function AppContent() {
       </section>
 
       {/* Artists Section */}
-      <section id="artists" className="py-20 bg-gray-50">
+      <section id="artists" className="py-12 sm:py-16 md:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Featured Artists</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <div className="text-center space-y-4 mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Featured Artists</h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               Discover talented artists using AI to create stunning videos and get more bookings
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {artists.map((artist, idx) => (
               <Card key={idx} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                 <div className="relative">
                   <img 
                     src={artist.image} 
                     alt={artist.name}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-40 sm:h-48 object-cover"
                   />
                   <div className="absolute top-4 right-4">
                     {artist.verified && (
@@ -447,10 +462,10 @@ function AppContent() {
                     </Badge>
                   </div>
                 </div>
-                <CardContent className="p-6 space-y-4">
+                <CardContent className="p-4 sm:p-6 space-y-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">{artist.name}</h3>
-                    <p className="text-blue-600 font-medium">{artist.genre}</p>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">{artist.name}</h3>
+                    <p className="text-blue-600 font-medium text-sm sm:text-base">{artist.genre}</p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-1">
@@ -467,20 +482,20 @@ function AppContent() {
                     </div>
                   </div>
                   <Button 
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 mb-4"
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 mb-4 text-sm sm:text-base"
                   >
-                    <Wand2 className="h-4 w-4 mr-2" />
+                    <Wand2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                     Create AI Videos Now
                   </Button>
                   <div className="flex gap-2">
-                    <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
+                    <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base">
                       Book Now
                     </Button>
-                    <Button variant="outline" size="icon">
-                      <Video className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                      <Video className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
-                    <Button variant="outline" size="icon">
-                      <Heart className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                      <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </CardContent>
@@ -488,30 +503,30 @@ function AppContent() {
             ))}
           </div>
           
-          <div className="text-center mt-12">
+          <div className="text-center mt-8 sm:mt-12">
             <Button 
               size="lg" 
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
             >
-              <Wand2 className="mr-2 h-5 w-5" />
+              <Wand2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Create Your AI Videos Now
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Promoters Section */}
-      <section id="promoters" className="py-20 bg-white">
+      <section id="promoters" className="py-12 sm:py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">For Event Organizers</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <div className="text-center space-y-4 mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">For Event Organizers</h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               Find the perfect artists for your events with AI-powered matching and booking tools
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {[
               { 
                 title: "AI Artist Matching", 
@@ -533,23 +548,23 @@ function AppContent() {
               }
             ].map((feature, idx) => (
               <Card key={idx} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardContent className="p-8 text-center space-y-4">
-                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${feature.color} mb-4`}>
-                    <feature.icon className="h-8 w-8" />
+                <CardContent className="p-6 sm:p-8 text-center space-y-4">
+                  <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full ${feature.color} mb-4`}>
+                    <feature.icon className="h-6 w-6 sm:h-8 sm:w-8" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900">{feature.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900">{feature.title}</h3>
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
           
-          <div className="text-center mt-12">
+          <div className="text-center mt-8 sm:mt-12">
                 <Button 
                   size="lg" 
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
             >
-              <Users className="mr-2 h-5 w-5" />
+              <Users className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Find Artists for Your Event
                 </Button>
               </div>
@@ -557,48 +572,48 @@ function AppContent() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 bg-gray-50">
+      <section id="about" className="py-12 sm:py-16 md:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">About Live Vibe</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <div className="text-center space-y-4 mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">About Live Vibe</h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
               Connecting artists with perfect events worldwide through AI-powered technology
             </p>
                 </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-gray-900">Our Mission</h3>
-              <p className="text-lg text-gray-600 leading-relaxed">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="space-y-6 text-center lg:text-left">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Our Mission</h3>
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
                 Live Vibe is revolutionizing the music industry by combining AI technology with human creativity. 
                 We help artists create stunning videos, build their portfolios, and connect with event organizers worldwide.
               </p>
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 justify-center lg:justify-start">
                   <div className="bg-green-100 p-2 rounded-full">
-                    <Check className="h-5 w-5 text-green-600" />
+                    <Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                 </div>
-                  <span className="text-gray-700">AI-powered video creation</span>
+                  <span className="text-sm sm:text-base text-gray-700">AI-powered video creation</span>
               </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 justify-center lg:justify-start">
                   <div className="bg-green-100 p-2 rounded-full">
-                    <Check className="h-5 w-5 text-green-600" />
+                    <Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
             </div>
-                  <span className="text-gray-700">Global artist discovery</span>
+                  <span className="text-sm sm:text-base text-gray-700">Global artist discovery</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 justify-center lg:justify-start">
                   <div className="bg-green-100 p-2 rounded-full">
-                    <Check className="h-5 w-5 text-green-600" />
+                    <Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                   </div>
-                  <span className="text-gray-700">Secure booking system</span>
+                  <span className="text-sm sm:text-base text-gray-700">Secure booking system</span>
                 </div>
               </div>
             </div>
-            <div className="relative">
+            <div className="relative order-first lg:order-last">
               <img 
                 src="https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg?auto=compress&cs=tinysrgb&w=600" 
                 alt="Live Vibe Team"
-                className="rounded-2xl shadow-2xl"
+                className="rounded-2xl shadow-2xl w-full"
               />
             </div>
           </div>
@@ -606,29 +621,29 @@ function AppContent() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-600 to-blue-600">
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-r from-purple-600 to-blue-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="space-y-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
+          <div className="space-y-6 sm:space-y-8">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
               Ready to Transform Your Music Career?
             </h2>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-blue-100 max-w-2xl mx-auto px-4">
               Join thousands of artists using AI to create stunning videos, get more bookings, and build successful careers
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
+                className="bg-white text-purple-600 hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold"
                 onClick={handleStartArtistJourney}
               >
-                <Wand2 className="mr-2 h-5 w-5" />
+                <Wand2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Create AI Videos Free
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 text-lg"
+                className="border-white text-white hover:bg-white hover:text-purple-600 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
                 onClick={() => {
                   if (user) {
                     setAiStudioOpen(true);
@@ -638,7 +653,7 @@ function AppContent() {
                   }
                 }}
               >
-                <Video className="mr-2 h-5 w-5" />
+                <Video className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Try AI Studio
               </Button>
             </div>
@@ -647,9 +662,9 @@ function AppContent() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
+      <footer className="bg-gray-900 text-white py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div 
                 className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
@@ -721,20 +736,20 @@ function AppContent() {
       {showPricing && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Pricing Plans</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Pricing Plans</h2>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowPricing(false)}
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </div>
             </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-4 sm:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {[
                   {
                     name: "Starter",
@@ -783,27 +798,27 @@ function AppContent() {
                   }
                 ].map((plan, idx) => (
                   <Card key={idx} className={`border-2 ${plan.color} ${plan.popular ? 'ring-2 ring-purple-500' : ''}`}>
-                    <CardHeader className="text-center">
+                    <CardHeader className="text-center p-4 sm:p-6">
                       {plan.popular && (
-                        <Badge className="w-fit mx-auto mb-2 bg-purple-600">Most Popular</Badge>
+                        <Badge className="w-fit mx-auto mb-2 bg-purple-600 text-xs sm:text-sm">Most Popular</Badge>
                       )}
-                      <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                      <div className="text-3xl font-bold text-gray-900">
-                        {plan.price}<span className="text-lg text-gray-500">/{plan.period}</span>
+                      <CardTitle className="text-xl sm:text-2xl font-bold">{plan.name}</CardTitle>
+                      <div className="text-2xl sm:text-3xl font-bold text-gray-900">
+                        {plan.price}<span className="text-base sm:text-lg text-gray-500">/{plan.period}</span>
                       </div>
-                      <p className="text-gray-600">{plan.description}</p>
+                      <p className="text-sm sm:text-base text-gray-600">{plan.description}</p>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 p-4 sm:p-6">
                       <ul className="space-y-3">
                         {plan.features.map((feature, featureIdx) => (
                           <li key={featureIdx} className="flex items-center gap-3">
-                            <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
-                            <span className="text-sm text-gray-700">{feature}</span>
+                            <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm text-gray-700">{feature}</span>
                           </li>
                         ))}
                       </ul>
                       <Button 
-                        className={`w-full ${plan.popular ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-900 hover:bg-gray-800'}`}
+                        className={`w-full text-sm sm:text-base ${plan.popular ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-900 hover:bg-gray-800'}`}
                         onClick={() => {
                           if (user) {
                             // Handle subscription
