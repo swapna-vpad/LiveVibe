@@ -372,10 +372,10 @@ const onClose = () => {
               </button>
             </p>
           </div>
-        </div>  
+       
       
     </form>
-          </div>
+         
       </CardContent>
     </Card>
   )
