@@ -277,7 +277,9 @@ const onClose = () => {
       <CardContent>
     <form onSubmit={handleSubmit} className="space-y-4">
          
-          
+          <div className="space-y-2">
+           
+            </div>
             <Command className="rounded-lg border shadow-sm">
               <CommandInput placeholder="Search user types..." />
               <CommandList>
