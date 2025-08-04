@@ -276,9 +276,34 @@ const onClose = () => {
       </CardHeader>
       <CardContent>
     <form onSubmit={handleSubmit} className="space-y-4">
-         
           <div className="space-y-2">
-           
+            <Label htmlFor="username">Username</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="username"
+                type="text"
+                placeholder="Choose a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
+              />
             </div>
             <Command className="rounded-lg border shadow-sm">
               <CommandInput placeholder="Search user types..." />
@@ -293,6 +318,7 @@ const onClose = () => {
                       <div className="bg-purple-100 p-2 rounded-lg">
                         <Mic className="h-5 w-5 text-purple-600" />
                       </div>
+                    </div>
                       <div className="flex-1">
                         <div className="font-medium text-gray-900">Artist</div>
                         <div className="text-sm text-gray-500">Perform and showcase your music</div>
@@ -348,7 +374,7 @@ const onClose = () => {
               </button>
             </p>
           </div>
-        </div>
+        </div>   
     </form>
       </CardContent>
     </Card>
