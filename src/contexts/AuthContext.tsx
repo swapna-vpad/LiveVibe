@@ -44,13 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // If user just signed in, check if they have a profile
       if (_event === 'SIGNED_IN' && session?.user) {
         console.log('AuthContext: User signed in, checking profile')
-        checkUserProfile(session.user.id)
-      }
-      
-      // If user just signed up, save data to appropriate tables and trigger profile setup
-      if (_event === 'SIGNED_UP' && session?.user) {
-        console.log('AuthContext: User signed up, saving data to tables')
-        handleNewUserSignup(session.user)
+        checkUserProfileAndRedirect(session.user.id)
       }
       
       // If user signed in via OAuth, check if we need to create profile
@@ -139,71 +133,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await enhancedSupabase.auth.signOut()
   }
 
-  const handleNewUserSignup = async (user: User) => {
-    try {
-      // Get user type from metadata or localStorage
-      const userType = user.user_metadata?.user_type || localStorage.getItem('pendingUserType')
-      
-      if (userType) {
-        // Save to auth_table
-        const { error: authError } = await enhancedSupabase
-          .from('auth_table')
-          .insert({
-            user_id: user.id,
-            user_type: userType,
-            email: user.email || ''
-          })
-        
-        if (authError) {
-          console.error('Error saving to auth_table:', authError)
-        }
-        
-        // Save to appropriate profile table
-        if (userType === 'artist') {
-          const { error: artistError } = await enhancedSupabase
-            .from('artist_profiles')
-            .insert({
-              user_id: user.id,
-              name: '', // Will be filled during profile setup
-              artist_type: 'performing', // Default value
-              performing_artist_type: 'singer', // Default value
-              music_genres: [],
-              instruments: []
-            })
-          
-          if (artistError) {
-            console.error('Error saving to artist_profiles:', artistError)
-          }
-        } else if (userType === 'promoter') {
-          const { error: promoterError } = await enhancedSupabase
-            .from('promoter_profiles')
-            .insert({
-              user_id: user.id,
-              name: '', // Will be filled during profile setup
-              promoter_type: 'promoter', // Default value
-              subscription_plan: 'freemium' // Default value
-            })
-          
-          if (promoterError) {
-            console.error('Error saving to promoter_profiles:', promoterError)
-          }
-        }
-        
-        // Clear pending user type
-        localStorage.removeItem('pendingUserType')
-        
-        // Trigger profile setup
-        setTimeout(() => {
-          const profileSetupEvent = new CustomEvent('startProfileSetup', {
-            detail: { userType }
-          })
-          window.dispatchEvent(profileSetupEvent)
-        }, 500)
-      }
-    } catch (error) {
-      console.error('Error handling new user signup:', error)
-    }
-  }
 
   const handleOAuthSignIn = async (user: User) => {
     try {
@@ -244,15 +173,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         // User has auth_table entry, check if they have a profile
-        checkUserProfile(user.id)
+        checkUserProfileAndRedirect(user.id)
       }
     } catch (error) {
       console.error('Error handling OAuth sign in:', error)
     }
   }
 
-  const checkUserProfile = async (userId: string) => {
+  const checkUserProfileAndRedirect = async (userId: string) => {
     try {
+      // Get user type from auth_table
+      const { data: authData } = await enhancedSupabase
+        .from('auth_table')
+        .select('user_type')
+        .eq('user_id', userId)
+        .single()
+      
+      const userType = authData?.user_type
+      
       // Check both profile tables
       const { data: artistProfile } = await enhancedSupabase
         .from('artist_profiles')
@@ -267,11 +205,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single()
       
       if (!artistProfile && !promoterProfile) {
-        // No profile found, trigger profile setup
+        // No profile found, trigger appropriate profile setup based on user type
         console.log('AuthContext: No profile found, triggering profile setup')
         setTimeout(() => {
-          const profileSetupEvent = new CustomEvent('startProfileSetup')
-          window.dispatchEvent(profileSetupEvent)
+          if (userType === 'promoter') {
+            const profileSetupEvent = new CustomEvent('startPromoterProfileSetup')
+            window.dispatchEvent(profileSetupEvent)
+          } else {
+            const profileSetupEvent = new CustomEvent('startProfileSetup')
+            window.dispatchEvent(profileSetupEvent)
+          }
         }, 500)
       } else {
         // Profile exists, show profile
@@ -282,7 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }, 500)
       }
     } catch (error) {
-      console.error('AuthContext: Error checking user profile:', error)
+      console.error('AuthContext: Error checking user profile and redirect:', error)
       // Fallback to showing profile
       setTimeout(() => {
         const showProfileEvent = new CustomEvent('showProfile')

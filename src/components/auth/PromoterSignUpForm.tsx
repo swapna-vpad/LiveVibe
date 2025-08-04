@@ -165,13 +165,21 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
           description: "🎉 Welcome to Live Vibe! Your promoter account has been created successfully.",
         })
         
-        // Trigger promoter profile setup after successful signup
+        // Close the signup modal and show login form
         setTimeout(() => {
-          const profileSetupEvent = new CustomEvent('startPromoterProfileSetup', {
-            detail: { userType: 'promoter' }
-          })
-          window.dispatchEvent(profileSetupEvent)
           onClose()
+          
+          // Show success message and redirect to login
+          setTimeout(() => {
+            toast({
+              title: "Account Created Successfully!",
+              description: "Please sign in with your new account to continue.",
+            })
+            
+            // Open the auth modal in sign-in mode
+            const openSignInEvent = new CustomEvent('openSignInModal')
+            window.dispatchEvent(openSignInEvent)
+          }, 500)
         }, 1000)
       }
     } catch (error: any) {

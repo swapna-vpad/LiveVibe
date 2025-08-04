@@ -116,12 +116,19 @@ function AppContent() {
       setAuthModalOpen(true);
     };
     
+    const handleOpenSignInModal = () => {
+      console.log('App: Opening sign-in modal')
+      setAuthMode('signin');
+      setAuthModalOpen(true);
+    };
+    
     window.addEventListener('closeAuthModal', handleCloseAuthModal);
     window.addEventListener('showProfile', handleShowProfile);
     window.addEventListener('startProfileSetup', handleStartProfileSetup);
     window.addEventListener('startPromoterProfileSetup', handleStartPromoterProfileSetup);
     window.addEventListener('showPricingAfterSignup', handleShowPricingAfterSignup);
     window.addEventListener('openSignupModal', handleOpenSignupModal);
+    window.addEventListener('openSignInModal', handleOpenSignInModal);
     
     return () => {
       window.removeEventListener('closeAuthModal', handleCloseAuthModal);
@@ -130,6 +137,7 @@ function AppContent() {
       window.removeEventListener('startPromoterProfileSetup', handleStartPromoterProfileSetup);
       window.removeEventListener('showPricingAfterSignup', handleShowPricingAfterSignup);
       window.removeEventListener('openSignupModal', handleOpenSignupModal);
+      window.removeEventListener('openSignInModal', handleOpenSignInModal);
     };
   }, []);
 
