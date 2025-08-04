@@ -342,82 +342,38 @@ const onClose = () => {
               </CommandList>
             </Command>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
+       
+          
+          {/* Spotify Login Button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleSocialSignUp('spotify')}
+            disabled={!userType}
+            className={`w-full h-12 rounded-xl border-2 transition-colors ${
+              userType 
+                ? 'border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600' 
+                : 'border-gray-300 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            <Music className="mr-2 h-5 w-5" />
+            Continue with Spotify
+          </Button>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
               <button
-                type="button"
-                onClick={() => setShowUserTypeSelection(true)}
-                className="text-sm text-gray-600 hover:text-gray-800 flex items-center"
+                onClick={onToggleMode}
+                className="text-purple-600 hover:text-purple-700 font-medium"
               >
-                ← Back to role selection
+                Sign in
               </button>
-              <div className="text-sm text-gray-500">
-                Selected: <span className="font-medium capitalize">{userType}</span>
-              </div>
-            </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Create a password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="pl-10 h-12 rounded-xl border-2 focus:border-purple-400"
-                />
-              </div>
-            </div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-teal-500 hover:from-purple-700 hover:to-teal-600 h-12 rounded-xl text-lg font-medium"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Account...
-                </>
-              ) : (
-                'Create Account'
-              )}
-            </Button>
-          </form>
-             
+            </p>
+          </div>
+        </div>
+        )
+    </form>
       </CardContent>
     </Card>
   )
