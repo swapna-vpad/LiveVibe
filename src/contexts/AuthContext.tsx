@@ -63,120 +63,91 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, userType: 'artist' | 'promoter') => {
     console.log('AuthContext: Attempting sign up for:', email, 'with user type:', userType)
     try {
-      console.log('AuthContext: Using auth_table for signup...')
-      
-      // Extract username from email (before @)
-      const username = email.split('@')[0]
-      
-      const response = await AuthTableService.signUp({
-        user_name: username,
+      // Use Supabase Auth for signup
+      const { data, error } = await enhancedSupabase.auth.signUp({
         email,
         password,
-        module: 'artist'
+        options: {
+          data: {
+            user_type: userType,
+            user_name: email.split('@')[0]
+          }
+        }
       })
 
-      
-      if (response.error) {
-        console.error('AuthContext: Auth table signup failed:', response.error)
-        return { error: response.error }
+      if (error) {
+        console.error('AuthContext: Supabase signup failed:', error)
+        return { error }
       }
-      
-      if (response.user) {
-        console.log('AuthContext: Auth table user created:', response.user)
-        setAuthTableUser(response.user)
+
+      if (data.user) {
+        console.log('AuthContext: User created successfully:', data.user.id)
+        setUser(data.user)
         
-        // Create a mock Supabase user for compatibility
-        const mockUser = {
-          id: response.user.id.toString(),
-          email: response.user.email,
-          user_metadata: {
-            user_name: response.user.user_name,
-            module: response.user.module
+        // Save to auth_table for compatibility
+        try {
+          const { error: authError } = await enhancedSupabase
+            .from('auth_table')
+            .insert({
+              user_id: data.user.id,
+              user_type: userType,
+              email: email,
+              user_name: email.split('@')[0],
+              module: userType
+            })
+          
+          if (authError) {
+            console.error('Error saving to auth_table:', authError)
           }
-        } as User
-        
-        setUser(mockUser)
+        } catch (profileError) {
+          console.error('Error creating auth table entry:', profileError)
+        }
         
         // Trigger profile setup
         setTimeout(() => {
-          const profileSetupEvent = new CustomEvent('startProfileSetup')
-          window.dispatchEvent(profileSetupEvent)
+          if (userType === 'promoter') {
+            const profileSetupEvent = new CustomEvent('startPromoterProfileSetup')
+            window.dispatchEvent(profileSetupEvent)
+          } else {
+            const profileSetupEvent = new CustomEvent('startProfileSetup')
+            window.dispatchEvent(profileSetupEvent)
+          }
         }, 500)
       }
-      
-      console.log('AuthContext: Auth table signup response:', response)
 
-      return { error: response.error }
+      return { error: null }
     } catch (error: any) {
       console.error('AuthContext: Sign up failed with error:', error)
-      
-      // Specific error handling
-      if (error.message?.includes('fetch')) {
-        return { error: { message: 'Connection failed. Please check your internet connection and try again.' } }
-      }
-      if (error.message?.includes('CORS')) {
-        return { error: { message: 'CORS error. Please contact support.' } }
-      }
-      if (error.name === 'TypeError') {
-        return { error: { message: 'Network error. Please check if you can access the internet.' } }
-      }
-      
-      return { error: { message: error.message || 'Unknown network error occurred.' } }
+      return { error: { message: error.message || 'Signup failed' } }
     }
   }
 
   const signIn = async (email: string, password: string) => {
     console.log('AuthContext: Attempting sign in for:', email)
     try {
-      console.log('AuthContext: Using auth_table for signin...')
-      
-      const response = await AuthTableService.signIn({
-        email_or_username: email,
+      // Use Supabase Auth for signin
+      const { data, error } = await enhancedSupabase.auth.signInWithPassword({
+        email,
         password
       })
-      
-      if (response.error) {
-        console.error('AuthContext: Auth table signin failed:', response.error)
-        return { error: response.error }
+
+      if (error) {
+        console.error('AuthContext: Supabase signin failed:', error)
+        return { error }
       }
-      
-      if (response.user) {
-        console.log('AuthContext: Auth table user authenticated:', response.user)
-        setAuthTableUser(response.user)
-        
-        // Create a mock Supabase user for compatibility
-        const mockUser = {
-          id: response.user.id.toString(),
-          email: response.user.email,
-          user_metadata: {
-            user_name: response.user.user_name,
-            module: response.user.module
-          }
-        } as User
-        
-        setUser(mockUser)
+
+      if (data.user) {
+        console.log('AuthContext: User authenticated successfully:', data.user.id)
+        setUser(data.user)
         
         // Check for existing profile
-        checkUserProfile(response.user.id.toString())
+        checkUserProfile(data.user.id)
       }
-      
-      console.log('AuthContext: Auth table signin response:', response)
-      return { error: response.error }
+
+      return { error: null }
     } catch (error: any) {
       console.error('AuthContext: Sign in failed with error:', error)
-      
-      // Specific error handling
-      if (error.message?.includes('fetch')) {
-        return { error: { message: 'Connection failed. Please check your internet connection and try again.' } }
-      }
-      if (error.message?.includes('CORS')) {
-        return { error: { message: 'CORS error. Please contact support.' } }
-      }
-      if (error.name === 'TypeError') {
-        return { error: { message: 'Network error. Please check if you can access the internet.' } }
-      }
-      
-      return { error: { message: error.message || 'Unknown network error occurred.' } }
+      return { error: { message: error.message || 'Signin failed' } }
     }
   }
 
