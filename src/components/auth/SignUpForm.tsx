@@ -318,7 +318,6 @@ const onClose = () => {
                       <div className="bg-purple-100 p-2 rounded-lg">
                         <Mic className="h-5 w-5 text-purple-600" />
                       </div>
-                    </div>
                       <div className="flex-1">
                         <div className="font-medium text-gray-900">Artist</div>
                         <div className="text-sm text-gray-500">Perform and showcase your music</div>
