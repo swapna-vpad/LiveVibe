@@ -347,13 +347,8 @@ const onClose = () => {
       
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-4">
-              <button
-                type="button"
-                onClick={() => setShowUserTypeSelection(true)}
-                className="text-sm text-gray-600 hover:text-gray-800 flex items-center"
-              >
-                ← Back to role selection
-              </button>
+
+              
               <div className="text-sm text-gray-500">
                 Selected: <span className="font-medium capitalize">{userType}</span>
               </div>
