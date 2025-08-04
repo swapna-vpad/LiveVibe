@@ -341,8 +341,7 @@ const onClose = () => {
                 </CommandGroup>
               </CommandList>
             </Command>
-          </div>
-
+          
       
       
           <div className="space-y-4">
@@ -373,7 +372,8 @@ const onClose = () => {
               </button>
             </p>
           </div>
-        </div>   
+        </div>  
+      </div>
     </form>
       </CardContent>
     </Card>
