@@ -362,20 +362,7 @@ const onClose = () => {
           </div>
           
           {/* Spotify Login Button */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => handleSocialSignUp('spotify')}
-            disabled={!userType}
-            className={`w-full h-12 rounded-xl border-2 transition-colors ${
-              userType 
-                ? 'border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600' 
-                : 'border-gray-300 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            <Music className="mr-2 h-5 w-5" />
-            Continue with Spotify
-          </Button>
+        
           
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
