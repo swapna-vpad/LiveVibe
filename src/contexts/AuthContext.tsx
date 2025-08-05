@@ -210,6 +210,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkUserProfileAndRedirect = async (userId: string) => {
     try {
+      // Check if we should open promoter profile setup after login
+      const shouldOpenPromoterSetup = localStorage.getItem('openPromoterProfileSetup')
+      if (shouldOpenPromoterSetup === 'true') {
+        localStorage.removeItem('openPromoterProfileSetup')
+        setTimeout(() => {
+          const profileSetupEvent = new CustomEvent('startPromoterProfileSetup')
+          window.dispatchEvent(profileSetupEvent)
+        }, 500)
+        return
+      }
+      
       // Get user type from auth_table
       const { data: authData } = await enhancedSupabase
         .from('auth_table')

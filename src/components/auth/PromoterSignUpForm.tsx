@@ -181,6 +181,9 @@ export function PromoterSignUpForm({ onBack, onClose }: PromoterSignUpFormProps)
             window.dispatchEvent(openSignInEvent)
           }, 500)
         }, 1000)
+        
+        // Store flag to open promoter profile setup after login
+        localStorage.setItem('openPromoterProfileSetup', 'true')
       }
     } catch (error: any) {
       toast({
