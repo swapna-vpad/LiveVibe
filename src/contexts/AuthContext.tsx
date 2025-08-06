@@ -104,15 +104,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         
         // Trigger profile setup
-        setTimeout(() => {
+       /*  setTimeout(() => {
           if (userType === 'promoter') {
             const profileSetupEvent = new CustomEvent('startPromoterProfileSetup')
             window.dispatchEvent(profileSetupEvent)
           } else {
-            const profileSetupEvent = new CustomEvent('startProfileSetup')
-            window.dispatchEvent(profileSetupEvent)
+            console.log("not a promoter and not able to login")
+           //const profileSetupEvent = new CustomEvent('startProfileSetup')
+            //window.dispatchEvent(profileSetupEvent)
           }
-        }, 500)
+        }, 500)*/
+
+           if (userType === 'promoter') {
+              const profileSetupEvent = new CustomEvent('startPromoterProfileSetup');
+              window.dispatchEvent(profileSetupEvent);
+           } else {
+            console.log("not a promoter and not able to login");
+                // const profileSetupEvent = new CustomEvent('startProfileSetup');
+                // window.dispatchEvent(profileSetupEvent);
+            }
+
+        
       }
 
       return { error: null }
@@ -186,9 +198,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq('user_id', user.id)
           .single()
         
-        if (!artistProfile && !promoterProfile) {
+      /*  if (!artistProfile && !promoterProfile) {
           // No profile exists, trigger profile setup
           setTimeout(() => {
+            console.log( " inside of timeout")
             const profileSetupEvent = new CustomEvent('startProfileSetup')
             window.dispatchEvent(profileSetupEvent)
           }, 500)
@@ -198,8 +211,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const showProfileEvent = new CustomEvent('showProfile')
             window.dispatchEvent(showProfileEvent)
           }, 500)
-        }
-      } else {
+        }*/
+      } 
+        else {
         // User has auth_table entry, check if they have a profile
         checkUserProfileAndRedirect(user.id)
       }
@@ -243,7 +257,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId)
         .single()
       
-      if (!artistProfile && !promoterProfile) {
+   /*   if (!artistProfile && !promoterProfile) {
         // No profile found, trigger appropriate profile setup based on user type
         console.log('AuthContext: No profile found, triggering profile setup')
         setTimeout(() => {
@@ -262,7 +276,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const showProfileEvent = new CustomEvent('showProfile')
           window.dispatchEvent(showProfileEvent)
         }, 500)
-      }
+      }*/
     } catch (error) {
       console.error('AuthContext: Error checking user profile and redirect:', error)
       // Fallback to showing profile

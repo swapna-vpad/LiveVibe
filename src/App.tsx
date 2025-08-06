@@ -70,7 +70,11 @@ function AppContent() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const [showArtistOnboarding, setShowArtistOnboarding] = useState(false);
+  const [showAudioToVideoPopup, setShowAudioToVideoPopup] = useState(false);
+
   const { user, loading, signIn } = useAuth();
+ 
+
 
   // Check for signup parameter on load
   useEffect(() => {
@@ -144,7 +148,8 @@ function AppContent() {
   // Handle artist onboarding flow
   const handleStartArtistJourney = () => {
     if (user) {
-      setProfileSetupOpen(true);
+      //setProfileSetupOpen(true);
+      console.log("not able to open the file")
     } else {
       setShowArtistOnboarding(true);
     }
@@ -340,7 +345,7 @@ function AppContent() {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
-                  onClick={handleStartArtistJourney}
+                  onClick={() => setShowAudioToVideoPopup(true)}
                 >
                   <Wand2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Create AI Videos Free
@@ -892,6 +897,52 @@ function AppContent() {
         </div>
       )}
       
+// ...existing code...
+console.log("App rendered");
+{showAudioToVideoPopup && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative">
+      <button
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+        onClick={() => setShowAudioToVideoPopup(false)}
+        aria-label="Close"
+      >
+        <X className="h-5 w-5" />
+      </button>
+      <h2 className="text-2xl font-bold mb-2 text-center">Create Stunning AI Videos from Audio</h2>
+      <p className="text-gray-600 mb-6 text-center">Upload your audio file</p>
+      <form
+        className="space-y-6"
+        onSubmit={e => {
+          e.preventDefault();
+          // Handle file upload and conversion here
+        }}
+      >
+        <label className="block">
+          <input
+            type="file"
+            accept="audio/*"
+            className="block w-full text-sm text-gray-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-full file:border-0
+              file:text-sm file:font-semibold
+              file:bg-blue-50 file:text-blue-700
+              hover:file:bg-blue-100"
+            required
+          />
+        </label>
+        <Button
+          type="submit"
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+        >
+          Convert
+        </Button>
+      </form>
+    </div>
+  </div>
+)}
+// ...existing code...
+
       <Toaster />
     </div>
   );
@@ -906,3 +957,4 @@ function App() {
 }
 
 export default App;
+
