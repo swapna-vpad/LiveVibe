@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Loader2, Mail, Lock, User, Github, Music, Mic, Users } from 'lucide-react'
 import { enhancedSupabase } from '@/lib/supabase'
 import { PromoterSignUpForm } from './PromoterSignUpForm'
+import { ArtistProfile } from '../profile/ArtistProfile'
 
 interface SignUpFormProps {
   onToggleMode: () => void
@@ -23,6 +24,7 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
   const [userType, setUserType] = useState<'artist' | 'promoter' | null>(null)
   const [showUserTypeSelection, setShowUserTypeSelection] = useState(true)
   const [showPromoterSignUp, setShowPromoterSignUp] = useState(false)
+
   const { signUp } = useAuth()
   const { toast } = useToast()
 
@@ -31,6 +33,12 @@ export function SignUpForm({ onToggleMode }: SignUpFormProps) {
     setUserType(type)
     if (type === 'promoter') {
       setShowPromoterSignUp(true)
+    } else if (type === 'artist') {
+      // Dispatch event to show ArtistProfile immediately
+      const showArtistProfileEvent = new CustomEvent('showArtistProfile')
+      window.dispatchEvent(showArtistProfileEvent)
+      // Close the auth modal
+      onClose()
     } else {
       setShowUserTypeSelection(false)
     }
@@ -260,6 +268,7 @@ const onClose = () => {
       />
     )
   }
+
 
   return (
     <Card className="w-full max-w-md mx-auto shadow-2xl border-0 bg-white/95 backdrop-blur-sm">

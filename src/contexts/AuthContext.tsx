@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { enhancedSupabase } from '@/lib/supabase'
 import { AuthTableService, AuthTableUser } from '@/lib/auth-table'
+import { PromoterInternalPage } from '@/components/Promoter/PromoterInternalPage';
 
 interface AuthContextType {
   user: User | null
@@ -20,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authTableUser, setAuthTableUser] = useState<AuthTableUser | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showPromoterInternal, setShowPromoterInternal] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -59,6 +61,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    const handleShowPromoter = () => setShowPromoterInternal(true);
+    window.addEventListener('showPromoterInternalPage', handleShowPromoter);
+    return () => window.removeEventListener('showPromoterInternalPage', handleShowPromoter);
+  }, []);
 
   const signUp = async (email: string, password: string, userType: 'artist' | 'promoter') => {
     console.log('AuthContext: Attempting sign up for:', email, 'with user type:', userType)
@@ -118,10 +126,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
            if (userType === 'promoter') {
               const profileSetupEvent = new CustomEvent('startPromoterProfileSetup');
               window.dispatchEvent(profileSetupEvent);
+           } else if(userType === 'artist') {
+            const startProfileSetup = new CustomEvent('startProfileSetup');
+              window.dispatchEvent(startProfileSetup);
            } else {
             console.log("not a promoter and not able to login");
-                // const profileSetupEvent = new CustomEvent('startProfileSetup');
-                // window.dispatchEvent(profileSetupEvent);
             }
 
         
@@ -182,6 +191,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .select('user_type')
         .eq('user_id', user.id)
         .single()
+
+        if (authData?.user_type === 'promoter') {
+          console.log("trying to call internal page");
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('showPromoterInternalPage'));
+          }, 0);
+        }
       
       if (authError || !authData) {
         // No auth_table entry, this might be a new OAuth user
@@ -197,6 +213,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .select('id')
           .eq('user_id', user.id)
           .single()
+
+          
         
       /*  if (!artistProfile && !promoterProfile) {
           // No profile exists, trigger profile setup
@@ -277,6 +295,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           window.dispatchEvent(showProfileEvent)
         }, 500)
       }*/
+
+      if (userType === 'promoter') {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('showPromoterInternalPage'));
+        }, 0);
+        return;
+      }
     } catch (error) {
       console.error('AuthContext: Error checking user profile and redirect:', error)
       // Fallback to showing profile
@@ -295,6 +320,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signIn,
     signOut,
+  }
+
+  if (showPromoterInternal) {
+    return <PromoterInternalPage />;
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

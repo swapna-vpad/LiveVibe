@@ -13,7 +13,6 @@ interface PromoterSignUpFormProps {
   onBack: () => void
   onClose: () => void
 }
-
 const CREATOR_TYPES = [
   { value: 'artist', label: 'Artist', icon: '🎨' },
   { value: 'band', label: 'Band', icon: '🎸' },

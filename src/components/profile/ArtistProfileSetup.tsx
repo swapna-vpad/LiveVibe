@@ -380,7 +380,7 @@ export function ArtistProfileSetup({ isOpen, onClose, existingProfile }: ArtistP
     if (checked) {
       setFormData(prev => ({ ...prev, music_genres: [...prev.music_genres, genre] }))
     } else {
-      setFormData(prev => ({ ...prev, music_genres: prev.music_genres.filter(g => g !== genre) }))
+      setFormData(prev => ({ ...prev, music_genres: prev.music_genres.filter((g: string) => g !== genre) }))
     }
   }
 
@@ -388,7 +388,7 @@ export function ArtistProfileSetup({ isOpen, onClose, existingProfile }: ArtistP
     if (checked) {
       setFormData(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }))
     } else {
-      setFormData(prev => ({ ...prev, instruments: prev.instruments.filter(i => i !== instrument) }))
+      setFormData(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }))
     }
   }
 

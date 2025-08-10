@@ -56,6 +56,7 @@ import {
   User,
   Check
 } from 'lucide-react';
+import { PromoterInternalPage } from '@/components/Promoter/PromoterInternalPage';
 
 function AppContent() {
   const [selectedTab, setSelectedTab] = useState('search');
@@ -71,7 +72,12 @@ function AppContent() {
   const [showPricing, setShowPricing] = useState(false);
   const [showArtistOnboarding, setShowArtistOnboarding] = useState(false);
   const [showAudioToVideoPopup, setShowAudioToVideoPopup] = useState(false);
-
+  // audio to video conversion
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioLoading, setaudioLoading] = useState(false);
+  const [showPromoterInternal, setShowPromoterInternal] = useState(false);
+  
+  // audio to video conversion
   const { user, loading, signIn } = useAuth();
  
 
@@ -99,9 +105,24 @@ function AppContent() {
       setShowProfile(true);
     };
     
-    const handleStartProfileSetup = () => {
+    const handleStartProfileSetup = (event: Event) => {
       console.log('App: Starting profile setup')
-      setProfileSetupOpen(true);
+      const customEvent = event as CustomEvent
+      const userType = customEvent.detail?.userType
+      
+      console.log('User type received:', userType)
+      console.log('Event detail:', customEvent.detail)
+
+      if (userType === 'artist') {
+        console.log('Redirecting to ArtistProfileSetup')
+        setProfileSetupOpen(true);
+      } else if (userType === 'promoter') {
+        console.log('Redirecting to PromoterProfileSetup')
+        setPromoterSetupOpen(true);
+      } else {
+        console.log('Redirecting to default profile setup')
+        setProfileSetupOpen(true);
+      }
     };
     
     const handleStartPromoterProfileSetup = () => {
@@ -125,7 +146,20 @@ function AppContent() {
       setAuthMode('signin');
       setAuthModalOpen(true);
     };
+
+    const handleShowArtistProfile = () => {
+      console.log('App: Showing ArtistProfile')
+      setShowProfile(true);
+    };
     
+    // audit to video conversion
+    const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+     if (e.target.files && e.target.files[0]) {
+    setAudioFile(e.target.files[0]);
+     }
+    };
+   // audio to video conversion
+
     window.addEventListener('closeAuthModal', handleCloseAuthModal);
     window.addEventListener('showProfile', handleShowProfile);
     window.addEventListener('startProfileSetup', handleStartProfileSetup);
@@ -133,6 +167,7 @@ function AppContent() {
     window.addEventListener('showPricingAfterSignup', handleShowPricingAfterSignup);
     window.addEventListener('openSignupModal', handleOpenSignupModal);
     window.addEventListener('openSignInModal', handleOpenSignInModal);
+    window.addEventListener('showArtistProfile', handleShowArtistProfile);
     
     return () => {
       window.removeEventListener('closeAuthModal', handleCloseAuthModal);
@@ -142,8 +177,43 @@ function AppContent() {
       window.removeEventListener('showPricingAfterSignup', handleShowPricingAfterSignup);
       window.removeEventListener('openSignupModal', handleOpenSignupModal);
       window.removeEventListener('openSignInModal', handleOpenSignInModal);
+      window.removeEventListener('showArtistProfile', handleShowArtistProfile);
     };
   }, []);
+
+  // Listen for the event and render the page
+  useEffect(() => {
+    const handleShowPromoter = () => setShowPromoterInternal(true);
+    window.addEventListener('showPromoterInternalPage', handleShowPromoter);
+    return () => window.removeEventListener('showPromoterInternalPage', handleShowPromoter);
+  }, []);
+
+  // audio to video conversion 
+  const handleConvert = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!audioFile) return;
+  setaudioLoading(true);
+  const formData = new FormData();
+  formData.append('audio', audioFile);
+
+  const response = await fetch('http://localhost:5000/convert', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'output.mp4';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setaudioLoading(false);
+  setShowAudioToVideoPopup(false);
+};
+
+// audio to video conversion 
 
   // Handle artist onboarding flow
   const handleStartArtistJourney = () => {
@@ -184,6 +254,10 @@ function AppContent() {
       verified: false
     }
   ];
+
+  if (showPromoterInternal) {
+    return <PromoterInternalPage />;
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -874,14 +948,14 @@ function AppContent() {
         onClose={() => setBookingSystemOpen(false)}
       />
       
-      {/* Artist Profile Modal */}
+      
       {showProfile && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Artist Profile</h2>
-                <Button
+               <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowProfile(false)}
@@ -892,12 +966,14 @@ function AppContent() {
             </div>
             <div className="p-6">
               <ArtistProfile />
+              <ArtistProfile />
             </div>
           </div>
         </div>
       )}
       
-// ...existing code...
+      //audio to video popup
+      // ...existing code...
 console.log("App rendered");
 {showAudioToVideoPopup && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -913,15 +989,17 @@ console.log("App rendered");
       <p className="text-gray-600 mb-6 text-center">Upload your audio file</p>
       <form
         className="space-y-6"
-        onSubmit={e => {
-          e.preventDefault();
-          // Handle file upload and conversion here
-        }}
+        onSubmit={handleConvert }
       >
         <label className="block">
           <input
             type="file"
             accept="audio/*"
+             onChange={e => {
+              if (e.target.files && e.target.files[0]) {
+                setAudioFile(e.target.files[0]);
+              }
+            }}
             className="block w-full text-sm text-gray-500
               file:mr-4 file:py-2 file:px-4
               file:rounded-full file:border-0
@@ -934,15 +1012,16 @@ console.log("App rendered");
         <Button
           type="submit"
           className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+          disabled={audioLoading}
         >
-          Convert
+          {audioLoading ? "Converting..." : "Convert"}
         </Button>
       </form>
     </div>
   </div>
 )}
-// ...existing code...
 
+//audio to video popup end
       <Toaster />
     </div>
   );
