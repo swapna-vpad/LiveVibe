@@ -75,7 +75,6 @@ function AppContent() {
   // audio to video conversion
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioLoading, setaudioLoading] = useState(false);
-  const [showPromoterInternal, setShowPromoterInternal] = useState(false);
   
   // audio to video conversion
   const { user, loading, signIn } = useAuth();
@@ -181,13 +180,6 @@ function AppContent() {
     };
   }, []);
 
-  // Listen for the event and render the page
-  useEffect(() => {
-    const handleShowPromoter = () => setShowPromoterInternal(true);
-    window.addEventListener('showPromoterInternalPage', handleShowPromoter);
-    return () => window.removeEventListener('showPromoterInternalPage', handleShowPromoter);
-  }, []);
-
   // audio to video conversion 
   const handleConvert = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -254,10 +246,6 @@ function AppContent() {
       verified: false
     }
   ];
-
-  if (showPromoterInternal) {
-    return <PromoterInternalPage />;
-  }
 
   return (
     <div className="min-h-screen bg-white">
